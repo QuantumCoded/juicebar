@@ -1,0 +1,26 @@
+{
+  inputs = {
+    % if unstable:
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    % else:
+    home-manager = {
+      url = "github:nix-community/home-manager/release-23.11";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-23.11";
+    % endif
+  };
+
+  outputs = inputs:
+    with inputs;
+    let
+    in
+    {
+    };
+}
