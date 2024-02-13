@@ -48,7 +48,7 @@
             ];
 
             text = ''
-              pushd ${./.}
+              pushd ${./.} > /dev/null
               python3 juicebar.py "$@"
               popd
             '';
