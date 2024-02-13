@@ -1,0 +1,13 @@
+{
+  imports = [
+    % if use_roles:
+	% for role in roles:
+	../../roles/${role}.nix
+	% endfor
+    % else:
+    ./configuration.nix
+    % endif
+    ./hardware.nix
+  ];
+}
+

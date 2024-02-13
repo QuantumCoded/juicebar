@@ -1,18 +1,22 @@
 {
   inputs = {
     % if unstable:
+    % if home_manager:
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    % endif
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     % else:
+    % if home_manager:
     home-manager = {
       url = "github:nix-community/home-manager/release-23.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    % endif
     nixpkgs.url = "github:nixos/nixpkgs/nixos-23.11";
     % endif
   };
@@ -20,7 +24,54 @@
   outputs = inputs:
     with inputs;
     let
+      system = buitlins.currentSystem;
+
+      % if allow_unfree:
+      pkgs = import nixpkgs {
+        inherit system;
+        config.allowUnfree = true;
+      };
+      % else:
+      pkgs = import nixpkgs { inherit system; };
+      % endif
+
+      specialArgs = { inherit inputs self; };
+
+      mkNixos = system: config: nixpkgs.lib.nixosSystem {
+        inherit specialArgs system;
+        modules = [
+          % if shared_config:
+          ./common.nix
+          % endif
+          ./modules/nixos
+          config
+        ];
+      };
+
+      % if home_manager:
+      mkHome = config: home-manager.lib.homeManagerConfiguration {
+        inherit pkgs;
+        extraSpecialArgs = specialArgs;
+        modules = [
+          ./modules/home-manager
+          config
+        ];
+      };
+      % endif
     in
     {
+      nixosConfigurations = {
+        % for host in hosts:
+        ${host} = mkNixos "${arches[host]}" ./hosts/${host};
+        % endif
+      };
+      % if home_manager:
+
+      homeConfigurations = {
+        % for home in host_strings:
+        "${home}" = mkHome ./home/${home.split("@").join("/")}.nix;
+        % endfor
+      };
+      % endif
     };
 }

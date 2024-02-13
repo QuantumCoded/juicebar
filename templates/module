@@ -1,0 +1,19 @@
+{ config, lib, ... }:
+let
+  inherit (lib)
+    mkEnableOption
+    mkIf
+    ;
+
+  cfg = config.${toplevel}.${name};
+in
+{
+  options.${toplevel}.${name} = {
+    enable = mkEnableOption "${name}";
+  };
+
+  config = mkIf cfg.enable {
+    # Your config here
+  };
+}
+

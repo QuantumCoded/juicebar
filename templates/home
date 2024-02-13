@@ -1,0 +1,7 @@
+{
+  home = rec {
+    username = "${user}";
+    homeDirectory = "/home/${"${username}"}";
+    stateVersion = "${release}";
+  };
+}

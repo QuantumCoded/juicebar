@@ -3,27 +3,56 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    systems.url = "github:nix-systems/default";
   };
 
   outputs = inputs:
     with inputs;
     let
-      pkgs = import nixpkgs {
-        system = "x86_64-linux";
-        config.allowUnfree = true;
-      };
+      eachSystem = nixpkgs.lib.genAttrs (import systems);
     in
     {
-      devShells.x86_64-linux.default = pkgs.mkShell {
-        nativeBuildInputs = with pkgs; [
-          (pkgs.python3.withPackages (python-pkgs: with python-pkgs; [
-            mako
-            packaging
-            regex
-            requests
-            questionary
-          ]))
-        ];
-      };
+      devShells = eachSystem (system:
+        let
+          pkgs = import nixpkgs { inherit system; };
+        in
+        {
+          default = pkgs.mkShell {
+            nativeBuildInputs = with pkgs; [
+              (pkgs.python3.withPackages (python-pkgs: with python-pkgs; [
+                mako
+                packaging
+                regex
+                requests
+                questionary
+              ]))
+            ];
+          };
+        });
+
+      packages = eachSystem (system:
+        let
+          pkgs = import nixpkgs { inherit system; };
+        in
+        {
+          default = pkgs.writeShellApplication {
+            name = "juice";
+            runtimeInputs = [
+              (pkgs.python3.withPackages (python-pkgs: with python-pkgs; [
+                mako
+                packaging
+                regex
+                requests
+                questionary
+              ]))
+            ];
+
+            text = ''
+              pushd ${./.}
+              python3 juicebar.py "$@"
+              popd
+            '';
+          };
+        });
     };
 }

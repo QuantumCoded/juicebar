@@ -1,0 +1,61 @@
+{ config, inputs, lib, self, ... }:
+let
+  inherit (lib)
+    mkEnableOption
+    mkIf
+    mkMerge
+    mkOption
+    recursiveUpdate
+    types
+    ;
+
+  cfg = config.${toplevel};
+in
+{
+  options.${toplevel}.home-manager = {
+    enable = mkEnableOption "home-manager";
+
+    homeConfig = mkOption {
+      type = types.attrs;
+      default = { };
+    };
+    % for user in users:
+
+    users.${user} = {
+      enable = mkEnableOption "${user} user";
+
+      homeConfig = mkOption {
+        type = types.attrs;
+        default = { };
+      };
+    };
+    % endfor
+  };
+
+  config = mkMerge [
+    (mkIf cfg.enable {
+      imports = [
+        ../home
+      ];
+
+      home-manager.extraSpecialArgs = { inherit inputs self; };
+      home-manager.useGlobalPkgs = true;
+      home-manager.useUserPackages = true;
+
+      programs.home-manager.enable = true;
+    })
+    % for user in users:
+    (mkIf cfg.users.${user}.enable {
+      home-manager.users.${user} = mkMerge [
+        cfg.homeConfig
+        cfg.users.${user}.homeConfig
+        {
+          imports = [
+            (../../home/${user} + "/${"${config.networking.hostName}"}.nix")
+          ];
+        }
+      ];
+    })
+    % endfor
+  ];
+}
