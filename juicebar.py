@@ -198,7 +198,7 @@ def juice_bar(nixos_dir):
         
         if not os.path.exists(home_path):
             template = Template(filename="templates/home")
-            file = open(home_path)
+            file = open(home_path, "w")
             file.write(template.render(
                 release=release,
                 user=user,
@@ -209,7 +209,7 @@ def juice_bar(nixos_dir):
 
         if not os.path.exists(host_path):
             template = Template(filename="templates/host")
-            file = open(host_path)
+            file = open(host_path, "w")
             file.write(template.render(
                 use_roles=use_roles,
                 roles=roles[host].sort(),
@@ -226,7 +226,7 @@ def juice_bar(nixos_dir):
     if shared_config:
         path = nixos_dir + "/common.nix"
         if not os.path.exists(path):
-            file = open(path)
+            file = open(path, "w")
             file.write("{}")
             file.close()
         else:
@@ -250,7 +250,7 @@ def juice_bar(nixos_dir):
 
         if not os.path.exists(module_path):
             template = Template(filename="templates/home-manager")
-            file = open(module_path)
+            file = open(module_path, "w")
             file.write(template.render(
                 toplevel=toplevel,
                 users=users.sort(),
@@ -271,7 +271,7 @@ def juice_bar(nixos_dir):
     flake_path = nixos_dir + "/flake.nix"
     if not os.path.exists(flake_path):
         template = Template(filename="templates/flake")
-        file = open(flake_path)
+        file = open(flake_path, "w")
         file.write(template.render(
             unstable=unstable,
             home_manager=home_manager,
@@ -325,7 +325,7 @@ def juice_module(system=None, name=None, toplevel=None):
     module_path = nixos_dir + "/" + system + "/" + name + ".nix"
     if not os.path.exists(module_path):
         template = Template(filename="templates/module")
-        file = open(module_path)
+        file = open(module_path, "w")
         file.write(template.render(
             toplevel=toplevel
         ))
