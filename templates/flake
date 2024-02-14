@@ -63,13 +63,13 @@
       nixosConfigurations = {
         % for host in hosts:
         ${host} = mkNixos "${arches[host]}" ./hosts/${host};
-        % endif
+        % endfor
       };
       % if home_manager:
 
       homeConfigurations = {
         % for home in host_strings:
-        "${home}" = mkHome ./home/${home.split("@").join("/")}.nix;
+        "${home}" = mkHome ./home/${"/".join(home.split("@"))}.nix;
         % endfor
       };
       % endif

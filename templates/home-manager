@@ -5,7 +5,6 @@ let
     mkIf
     mkMerge
     mkOption
-    recursiveUpdate
     types
     ;
 
@@ -32,30 +31,24 @@ in
     % endfor
   };
 
-  config = mkMerge [
-    (mkIf cfg.enable {
-      imports = [
-        ../home
-      ];
+  config = mkIf cfg.enable (mkMerge [
+    {
+      imports = [ ../home-manager ];
 
       home-manager.extraSpecialArgs = { inherit inputs self; };
       home-manager.useGlobalPkgs = true;
       home-manager.useUserPackages = true;
 
       programs.home-manager.enable = true;
-    })
+    }
     % for user in users:
     (mkIf cfg.users.${user}.enable {
       home-manager.users.${user} = mkMerge [
         cfg.homeConfig
         cfg.users.${user}.homeConfig
-        {
-          imports = [
-            (../../home/${user} + "/${"${config.networking.hostName}"}.nix")
-          ];
-        }
+        { imports = [ (../../home/${user} + "/${"${config.networking.hostName}"}.nix") ]; }
       ];
     })
     % endfor
-  ];
+  ]);
 }
