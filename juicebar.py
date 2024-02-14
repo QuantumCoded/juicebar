@@ -242,10 +242,6 @@ def juice_bar(nixos_dir):
         "Any NixOS modules to create?",
         func=lambda string: juice_module("nixos", string, toplevel, nixos_dir),
     )
-    
-    home_manager = True
-    toplevel = "base"
-    users = [ "jeff", "jim" ]
 
     if home_manager:
         path = nixos_dir + "/modules/home-manager"
