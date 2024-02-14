@@ -1,9 +1,9 @@
 {
   imports = [
     % if use_roles:
-	% for role in roles:
-	../../roles/${role}.nix
-	% endfor
+    % for role in roles:
+    ../../roles/${role}.nix
+    % endfor
     % else:
     ./configuration.nix
     % endif
