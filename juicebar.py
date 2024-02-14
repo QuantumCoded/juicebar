@@ -243,6 +243,18 @@ def juice_bar(nixos_dir):
         func=lambda string: juice_module("nixos", string, toplevel, nixos_dir),
     )
 
+    default_path = nixos_dir + "/modules/nixos/default.nix"
+
+    if not os.path.exists(default_path):
+        template = Template(filename="templates/default")
+        nixos_modules.append("home-manager")
+        nixos_modules.sort()
+        file = open(default_path, "w")
+        file.write(template.render(modules=nixos_modules))
+        file.close()
+    else:
+        print("warning: '" + default_path + "' exists, not overwriting")
+
     if home_manager:
         path = nixos_dir + "/modules/home-manager"
         module_path = nixos_dir + "/modules/nixos/home-manager.nix"
@@ -266,7 +278,18 @@ def juice_bar(nixos_dir):
             "Any home-manager modules to create?",
             func=lambda string: juice_module("home-manager", string, toplevel, nixos_dir),
         )
-    
+
+        default_path = nixos_dir + "/modules/home-manager/default.nix"
+
+        if not os.path.exists(default_path):
+            template = Template(filename="templates/default")
+            home_manager_modules.sort()
+            file = open(default_path, "w")
+            file.write(template.render(modules=home_manager_modules))
+            file.close()
+        else:
+            print("warning: '" + default_path + "' exists, not overwriting")
+        
     allow_unfree = questionary.confirm(
         "Would you like to allow unfree packages in flake.nix?"
     ).ask()

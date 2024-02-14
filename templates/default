@@ -1,0 +1,7 @@
+{
+  imports = [
+    % for module in modules:
+    ./${module}.nix
+    % endfor
+  ];
+}
