@@ -111,7 +111,8 @@ def juice_bar(nixos_dir):
 
     unstable = False
     choices = ["Unstable (rolling)", "Other"]
-    latest_release = get_latest_release()
+    # latest_release = get_latest_release()
+    latest_release = "23.11"
     latest_release_choice = "Latest ({release})".format(release=latest_release) 
 
     if latest_release:
@@ -209,10 +210,11 @@ def juice_bar(nixos_dir):
 
         if not os.path.exists(host_path):
             template = Template(filename="templates/host")
+            roles[host].sort()
             file = open(host_path, "w")
             file.write(template.render(
                 use_roles=use_roles,
-                roles=roles[host].sort(),
+                roles=roles[host],
             ))
             file.close()
         else:
@@ -232,14 +234,18 @@ def juice_bar(nixos_dir):
         else:
             print("warning: '" + path + "' exists, not overwriting")
 
-    toplevel = question.text(
+    toplevel = questionary.text(
         "What would you like to call your top level attribute?"
     ).ask()
 
     nixos_modules = ask_many_strings(
         "Any NixOS modules to create?",
-        func=lambda string: juice_module("nixos", string, toplevel),
+        func=lambda string: juice_module("nixos", string, toplevel, nixos_dir),
     )
+    
+    home_manager = True
+    toplevel = "base"
+    users = [ "jeff", "jim" ]
 
     if home_manager:
         path = nixos_dir + "/modules/home-manager"
@@ -250,10 +256,11 @@ def juice_bar(nixos_dir):
 
         if not os.path.exists(module_path):
             template = Template(filename="templates/home-manager")
+            users.sort()
             file = open(module_path, "w")
             file.write(template.render(
                 toplevel=toplevel,
-                users=users.sort(),
+                users=users,
             ))
             file.close()
         else:
@@ -261,7 +268,7 @@ def juice_bar(nixos_dir):
 
         home_manager_modules = ask_many_strings(
             "Any home-manager modules to create?",
-            func=lambda string: juice_module("home-manager", string, toplevel),
+            func=lambda string: juice_module("home-manager", string, toplevel, nixos_dir),
         )
     
     allow_unfree = questionary.confirm(
@@ -271,14 +278,16 @@ def juice_bar(nixos_dir):
     flake_path = nixos_dir + "/flake.nix"
     if not os.path.exists(flake_path):
         template = Template(filename="templates/flake")
+        hosts.sort()
+        host_strings.sort()
         file = open(flake_path, "w")
         file.write(template.render(
             unstable=unstable,
             home_manager=home_manager,
             allow_unfree=allow_unfree,
             shared_config=shared_config,
-            hosts=hosts.sort(),
-            host_strings=host_strings.sort(),
+            hosts=hosts,
+            host_strings=host_strings,
             arches=arches
         ))
         file.close()
@@ -306,7 +315,10 @@ def juice_bar(nixos_dir):
                 nixos_dir + "/hosts/{host}/hardware.nix".format(host=host),
             )
 
-def juice_module(system=None, name=None, toplevel=None):
+def juice_module(system=None, name=None, toplevel=None, nixos_dir=None):
+    if not nixos_dir:
+        nixos_dir = "/etc/nixos"
+
     if not system:
         system = questionary.text(
             "What module system should this module be made for?"
@@ -322,12 +334,13 @@ def juice_module(system=None, name=None, toplevel=None):
             "What is your top level attribute?"
         ).ask()
 
-    module_path = nixos_dir + "/" + system + "/" + name + ".nix"
+    module_path = nixos_dir + "/modules/" + system + "/" + name + ".nix"
     if not os.path.exists(module_path):
         template = Template(filename="templates/module")
         file = open(module_path, "w")
         file.write(template.render(
-            toplevel=toplevel
+            toplevel=toplevel,
+            name=name,
         ))
     else:
         print("warning: '" + module_path + "' exists, not overwriting")
