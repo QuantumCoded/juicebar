@@ -317,17 +317,32 @@ def juice_bar(nixos_dir):
         move_configs = questionary.confirm(
             "Do you have an existing configuration.nix and " +
             "hardware-configuration.nix you would like to move into place?"
-        )
+        ).ask()
 
         if move_configs:
             host = questionary.text(
                 "What is the hostname of this system?"
-            )
+            ).ask()
 
             os.rename(
                 nixos_dir + "/configuration.nix",
                 nixos_dir + "/hosts/{host}/configuration.nix".format(host=host),
             )
+
+            os.rename(
+                nixos_dir + "/hardware-configuration.nix",
+                nixos_dir + "/hosts/{host}/hardware.nix".format(host=host),
+            )
+    else:
+        move_configs = questionary.confirm(
+            "Do you have an existing hardware-configuration.nix you would " +
+            "like to move into place?"
+        ).ask()
+
+        if move_configs:
+            host = questionary.text(
+                "What is the hostname of this system?"
+            ).ask()
 
             os.rename(
                 nixos_dir + "/hardware-configuration.nix",
